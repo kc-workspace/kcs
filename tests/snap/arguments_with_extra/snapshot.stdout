@@ -1,6 +1,0 @@
-key   : arguments
-name  : Arguments
-ns    : cmd.arguments
-args  : 3 [a b c]
-raw   : <missing>
-extra : hello world
