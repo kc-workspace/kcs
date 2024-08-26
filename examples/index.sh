@@ -5,19 +5,22 @@
 ## version=v2.0.0-alpha.1
 
 ## Variables:
-## $KCS_XXX     - Readonly variables (For getting information)
-## $_KCS_XXX    - Configurable varibles (For setting configuration)
-## $__KCS_XXX   - Internal variables (For internal usage)
+## $KCS_NS_XXX   - Readonly variables (for getting information)
+## $_KCS_NS_XXX  - Configurable varibles (for setting information)
+## $__KCS_NS_XXX - Private variables (for reference on same file only)
+## $XXX          - Special variables alias $_KCS_XXX variables
 
 ## Functions:
-## kcs_ns_xxx   - Public APIs for end user
-## _kcs_ns_xxx  - End user callback
-## __kcs_ns_xxx - Interval functions (For)
+## kcs_ns_xxx    - Public functions (can call by anyone)
+## _kcs_ns_xxx   - Private functions (should call by same file or same directory)
+## __kcs_ns_xxx  - Callback functions (will call by callback function)
 
 ## Convension:
-## Namespace (ns) key must be single form
-## xxx on function must end with verb (e.g. get, set, list, delete)
-## Plugin name must be plural form
+## Function namespace must be single form; except callback function
+## Plugin name (directory) must be plural form
+## Core and plugins file must be plural form (except main.sh)
+## Function must be end with verb (e.g. get, set, list, delete)
+## Core and plugins functions should sorted as public -> private -> callback
 
 # region - Script Settings
 
@@ -46,12 +49,18 @@ source "$__KCS_SETUP_PATH"
 
 # region - Script Callbacks
 
-_kcs_main_hello() {
+## Call by @exec tag
+__kcs_hello_main() {
   if [ "$#" -gt 0 ]; then
-    echo "$@"
+    echo "main arguments: $# '$*'"
   fi
 
   return 0
+}
+
+## Call by @listen tag
+__kcs_hello_on_main() {
+  kcs_exec logger info 'core.main' 'hello world'
 }
 
 # endregion
@@ -59,30 +68,42 @@ _kcs_main_hello() {
 
 # region - Script Runner Arguments
 
-## Default tags @setting, @exec, and @load
-## @version - set version all plugins should load from
-_KCS_SCRIPT_ARGUMENTS=(
-  @setting CACHE true     # set setting (__KCS_SETTINGS_CACHE=true)
-  @setting MODE main      # support 'main' or 'command' mode
-  @setting NAME hello     # set command name
-  @setting VERSION v1.0.0 # set command version
-  @load "$KCS_DEFAULT"    # add loggers, colors, temporaries support
-  @exec main              # immediately execute _kcs_<$1>_<setting.name> command
-  @load registry          # load registry support (load plugins from multiple registry)
+## Default tags:
+##   - @config <key> <arg> [args...]
+##       -- set config key to value; if set more than 1 argument, config key will set value as array
+##       -- reference: core/configs.sh
+##   - @load <plugin> [args...]
+##       -- load plugin to current script
+##       -- reference: core/loaders.sh
+##   - @exec <name> [args...]
+##       -- execute __kcs_<config.name|default>_<name> immediately
+##       -- reference: core/executors.sh
+##   - @listen <step=[setup|init|main|teardown]> [args...]
+##       -- execute __kcs_<config.name|default>_on_<step> when step start
+##       -- reference: core/events.sh
 
+_KCS_OPTIONS=(
+  @config CACHE true
+  @config MODE main
+  @config NAME hello     # use to set callback function namespace
+  @config VERSION v1.0.0 # use to print script version
+  @load "$KCS_DEFAULT"   # extends loggers, add colors support, improve temporary file/folder support
+  @load registries       # load registry plugin
+  @exec main
+  @listen main
   # @registry.add "kamontat/example-kcs" main # add kamontat/example-kcs registry
-  # @load hook                                # hook names: setup main cleanup post_cleanup finish
-  # @hook.use "$KCS_DEFAULT"                  # add _kcs_hook_<hook-name>_<command-name>
-  # @hook.new setup custom_name               # add _kcs_hook_setup_custom_name function to setup hook
+  # @load hook                                # load hook plugin: setup main teardown post_teardown finish
+  # @hook.use "$KCS_DEFAULT"                  # add _kcs_<setting.name>_hook_<hook-name> for all hooks name
+  # @hook.new setup custom_name               # add _kcs_<setting.name>_hook_<hook-name>_custom_name function to setup hook
   # @load option                              # add option support
   # @option.use "$KCS_DEFAULT"
   # @option.new '-e,--example [str:hello]' 'EXAMPLE' 'show example message'
 )
 
-## Minimal argument
-# _KCS_SCRIPT_ARGUMENTS=(
-#   @version main
-#   @main
+## Minimal options
+# _KCS_OPTIONS=(
+#   @setting NAME hello
+#   @exec main
 # )
 
 # endregion
