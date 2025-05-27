@@ -34,14 +34,14 @@ _kcs_setup() {
   fi
 
   if ! [ -f "$filepath" ] && ! "$_KCS_CORE_LOCAL"; then
-    if [ -n "$debug" ]; then
+    if "$debug"; then
       echo "file is missing ($filepath), download from registries"
     fi
 
     local registry download_url
     for registry in "${__KCS_CORE_REGISTRIES[@]}"; do
       download_url="https://${registry}/${directory#*"$_KCS_PATH_ROOT"/}/${filename}"
-      if [ -n "$debug" ]; then
+      if "$debug"; then
         echo "downloading from $download_url"
       fi
 
@@ -67,7 +67,7 @@ _kcs_setup() {
     exit "${_KCS_ERR_SETUP:-11}"
   fi
 
-  if [ -n "$debug" ]; then
+  if "$debug"; then
     echo "sourcing '$filepath'"
   fi
   source "$filepath"
@@ -77,3 +77,11 @@ _kcs_setup() {
 # ---------------------------------------------------------------------------- #
 
 _kcs_setup "$_KCS_PATH_CORE" constants "$_KCS_CORE_DEBUG" #
+_kcs_setup "$_KCS_PATH_CORE" simples "$_KCS_CORE_DEBUG"   # depends on [constants]
+_kcs_setup "$_KCS_PATH_CORE" executors "$_KCS_CORE_DEBUG" # depends on [constants, simples]
+_kcs_setup "$_KCS_PATH_CORE" configs "$_KCS_CORE_DEBUG"   # depends on [simples]
+_kcs_setup "$_KCS_PATH_CORE" events "$_KCS_CORE_DEBUG"    # depends on [constants, executors, configs]
+_kcs_setup "$_KCS_PATH_CORE" parsers "$_KCS_CORE_DEBUG"   # depends on [constants, executors, events]
+_kcs_setup "$_KCS_PATH_CORE" loaders "$_KCS_CORE_DEBUG"   # depends on [constants, configs, events]
+_kcs_setup "$_KCS_PATH_CORE" tags "$_KCS_CORE_DEBUG"      # depends on [executors, configs, events, parsers, loaders]
+_kcs_setup "$_KCS_PATH_CORE" main "$_KCS_CORE_DEBUG"      # depends on [constants, executors, events]
