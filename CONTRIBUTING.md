@@ -7,97 +7,27 @@ Thank you for investing your time in contributing to our project!
 Because how bash script works, we need to set some convention
 to make our code clean and easy to read.
 
+1. Function name must matches regex: `[_]{0,2}kcs_(?<namespace>[a-z]+)(?<name>_[a-z]+)?_(?<action>[a-z_]+)`
+2. Variable name must matches regex: `[_]{0,2}KCS_(?<namespace>[A-Z]+)_(?<name>[A-Z_]+)`
+3. The namespace must be single noun and single form
+4. The function name must end with action verb (e.g. **get**, **set**, **list**, **delete**)
+5. Core and plugin files name must be plural form
+6. Core and plugin functions should sorted as public -> private -> callback
+
 There are 2 parts for naming convention: **variables** and **functions**.
 
 ### Variables
 
-- For publicly **read-write** variables (setting), should be `KCS_<name>` template
-- For publicly **read-only** variables (data), should be `_KCS_<name>` template
-- For internal **read-write** variables (internal), should be `__KCS_<name>` template
-    - Subject to change without notice
-
-For Testing all variables should be `KCT_<name>` template.
+- For configure core settings, should use either `KCS_CORE_<NAME>` template
+    - On some variables, you can use `<NAME>` alias instead (e.g. **_KCS_CORE_DEBUG** -> **DEBUG**)
+- For **read** core settings or information use `_KCS_CORE_<NAME>` template
+- For publicly **read-write** variables, should use `KCS_<NS>_<NAME>` template
+- For publicly **read-only** variables, should use `_KCS_<NS>_<NAME>` template
+- For internal **read-write** variables, should use `__KCS_<NS>_<NAME>` template
+- Special variables for testing `KCT_<NAME>`
 
 ### Functions
 
-- For public APIs, should be `kcs_<module>_<name>` template
-    - This can be used on either place including commands
-    - It has notice period before deprecate and remove
-- For private APIs, should be `_kcs_<module>_<name>` template
-    - This should not use on any directory except 'private' and 'internal' lib
-    - It has notice period before deprecate and remove
-- For formatted APIs, should be `__kcs_<module>_<name>` template
-    - All formatted APIs function will automatically called by internal process
-    - This should not call directly
-
-### Libraries and Utilities
-
-Both libraries and utilities are the same in term of a helper functions
-for developer. The main difference is libraries is internal provided
-but utilities is user defined functions.
-This is to prevent user accidently override internal libraries with same name.
-
-There are few convention for create new library or utility listed below
-
-1. All logic should insulate in function.
-2. All exported variables should be cleanup afterward
-
-Both libraries and utilities contains several lifecycle callback for setup
-
-1. `__kcs_<name>_on_init <args...>` - This will called after loaded successfully
-    - Use for loading dependencies (`kcs_ld_lib`)
-    - Use for adding hooks (`kcs_hooks_add`)
-
-## Paths
-
-We export several paths variables for you to refer to.
-
-1. `$_KCS_PATH_ROOT` - the root directory of kcs (usually contains **kcs** or **index.sh** script). The script will always maintain this location as default `$PWD` path
-2. `$_KCS_PATH_SRC` - the src directory of kcs (usually a directory called **src** or **.kcs**)
-3. `$_KCS_PATH_ORIG` - the original directory where user executes kcs script
-4. `$_KCS_PATH_TMP` - the temporary directory for storing temporary files
-5. `$_KCS_PATH_PRIV` - the private libraries for kcs
-6. `$_KCS_PATH_LIB` - the public libraries for kcs
-
-## Commands
-
-On commands script, we expose several variables to use
-
-1. `$_KCS_CMD_NAME` - the command name (use for command callback and logging)
-2. `$_KCS_CMD_KEY` - the command key (normallize command name for function safe)
-3. `$_KCS_CMD_DESCRIPTION` - the command description (received from `KCS_CMD_DESCRIPTION=<desc>` on default environment)
-4. `$_KCS_CMD_VERSION` - the command version (received from `KCS_CMD_VERSION=<0.0.0>` on default environment)
-5. `$_KCS_CMD_PATH` - the full path of executing command
-6. `$_KCS_CMD_DIRPATH` - the directory contains command script
-7. `$_KCS_CMD_FILENAME` - the command filename
-8. `$_KCS_CMD_ARGS` - the parsed arguments array
-9. `$_KCS_CMD_ARGS_RAW` - the space separated string of raw arguments
-10. `$_KCS_CMD_ARGS_EXTRA` - the space separated string of extra arguments
-11. `$_KCS_OPT_<NAME>_VALUE` - the option value from user
-
-## Arguments
-
-The argument is string input from someone each pass to function. We specific argument to 4 types.
-
-1. Direct Arguments (DA) - This is a argument send directly to function.
-    - You can access by `$@` (array)
-2. Parsed Arguments (PA) - This is a parsed argument that commands doesn't know what to do with it
-    - You can access by `${_KCS_CMD_ARGS[@]}` (array)
-3. Extra Arguments (EA) - This is a extra argument for extra command (arguments after '--' will consider as extra)
-    - You can access by `$_KCS_CMD_ARGS_EXTRA` (string)
-4. Raw Arguments (RA) - This is a raw argument as is from input (ALL arguments after '<>' will consider as raw)
-    - You can access by `$_KCS_CMD_ARGS_RAW` (string)
-
-## Tests
-
-To simulate tests on Linux:
-
-```bash
-docker run --rm --interactive --tty --entrypoint /bin/bash --workdir "/work" -v "$PWD:/work" debian:stable-slim
-```
-
-## Libraries
-
-On kcs, not all libraries had been loaded by default.
-The recommend is to always load libraries when you need it (and not sure whether it has been loaded).
-All libraries come with deduplicatation to not reload if it loaded.
+- For Public functions, should use `kcs_<ns>[_<name>]_<action>` template
+- For Private functions, should use `_kcs_<ns>[_<name>]_<action>` template
+- For callback functions, should use `__kcs_<ns>[_<name>]_<action>` template
