@@ -19,7 +19,7 @@ __kcs_core_tag_exec() {
   _kcs_exec "$(kcs_config_get "NAME" 'default')" "$name" --callback -- "$@"
 }
 
-## @listen <step=[setup|init|main|teardown]> [args...]
+## @listen <step=[init|main|teardown]> [args...]
 __kcs_core_tag_listen() {
   local event="$1"
   shift

@@ -32,10 +32,11 @@ kcs_load_plugin() {
     "$_KCS_PATH_WDIR/src/plugins"
     "$_KCS_PATH_PLUGINS"
   )
-  kcs_exec logger debug "$ns" \
-    "checking plugins from: #%d [%s]" "${#locations[@]}" "${locations[*]}"
 
-  local dir target=""
+  kcs_exec logger debug "$ns" \
+    "checking '%s' plugin from: #%d locations" "$name" "${#locations[@]}"
+
+  local dir target="$_KCS_PATH_PLUGINS"
   for dir in "${locations[@]}"; do
     if [ -f "$dir/$filename" ]; then
       target="$dir"
@@ -51,10 +52,10 @@ kcs_load_plugin() {
   local filepath="$target/$filename"
   if ! [ -f "$filepath" ] && ! "$_KCS_CORE_LOCAL"; then
     local registry download_url http_status_file http_status
-    for registry in "${KCS_REGISTRIES[@]}"; do
+    for registry in "${__KCS_CORE_REGISTRIES[@]}"; do
       http_status_file="$(kcs_exec temp file)"
-      download_url="https://${registry}/${filepath#*/src/}"
-      kcs_exec logger debug "$ns" "downloading '%s' to '%s'" "$download_url"
+      download_url="https://${registry}/${filepath#*"$_KCS_PATH_ROOT"/}"
+      kcs_exec logger debug "$ns" "downloading '%s' to '%s'" "$download_url" "$filepath"
 
       if ! curl -sSL -w "%{http_code}" -o "$filepath" "$download_url" >"$http_status_file"; then
         kcs_exec logger debug "$ns" "curl command return non-zero code"
@@ -75,7 +76,7 @@ kcs_load_plugin() {
 
   if ! [ -f "$filepath" ]; then
     kcs_exec logger error "$ns" "Missing target file to load: %s" "$filepath"
-    return "$KCS_ERR_LOAD_FAILED"
+    return "$_KCS_ERR_LOAD_FAILED"
   fi
 
   local code=0

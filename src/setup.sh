@@ -8,18 +8,24 @@ set -e
 ## Current app directory
 _KCS_PATH_ADIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-: "${_KCS_PATH_WDIR:=${KCS_PATH_CWD:-$PWD}}"                               ## Current working directory
-: "${_KCS_PATH_ROOT:=${KCS_PATH_ROOT:-$_KCS_PATH_ADIR}}"                   ## Application root directory
-: "${_KCS_PATH_CORE:=${KCS_PATH_CORE:-$_KCS_PATH_ROOT/src/core}}"          ## Application core directory
-: "${_KCS_PATH_PLUGINS:=${KCS_PATH_PLUGINS:-$_KCS_PATH_ROOT/src/plugins}}" ## Application plugins directory
+_KCS_PATH_WDIR="${KCS_PATH_CWD:-$PWD}"                               ## Current working directory
+_KCS_PATH_ROOT="${KCS_PATH_ROOT:-$_KCS_PATH_ADIR}"                   ## Application root directory
+_KCS_PATH_CORE="${KCS_PATH_CORE:-$_KCS_PATH_ROOT/src/core}"          ## Application core directory
+_KCS_PATH_PLUGINS="${KCS_PATH_PLUGINS:-$_KCS_PATH_ROOT/src/plugins}" ## Application plugins directory
 
-: "${_KCS_CORE_VERSION:=${KCS_CORE_VERSION:-main}}"           ## Application version
-: "${_KCS_CORE_DEBUG:=${KCS_CORE_DEBUG:-${DEBUG:-false}}}"    ## Debug mode
-: "${_KCS_CORE_SILENT:=${KCS_CORE_SILENT:-${SILENT:-false}}}" ## Silent mode
-: "${_KCS_CORE_LOCAL:=${KCS_CORE_LOCAL:-false}}"              ## Local mode (never download from registry)
+_KCS_CORE_VERSION="${KCS_CORE_VERSION:-main}"           ## Application version
+_KCS_CORE_DEBUG="${KCS_CORE_DEBUG:-${DEBUG:-false}}"    ## Debug mode
+_KCS_CORE_SILENT="${KCS_CORE_SILENT:-${SILENT:-false}}" ## Silent mode
+_KCS_CORE_LOCAL="${KCS_CORE_LOCAL:-false}"              ## Local mode (never download from registry)
 
-: "${_KCS_CORE_REGISTRY:=${KCS_CORE_REGISTRY:-github.com/kc-workspace/kcs/raw/$_KCS_CORE_VERSION}}"
+_KCS_LOG_LEVEL="${KCS_LOG_LEVEL:-i}"       ## Specific level to log
+_KCS_LOG_NS="${KCS_LOG_NS:-}"              ## Specific namespace to log
+_KCS_LOG_DETAIL="${KCS_LOG_DETAIL:-false}" ## Don't normalize logging message when detail is enabled
+
+_KCS_CORE_REGISTRY="${KCS_CORE_REGISTRY:-github.com/kc-workspace/kcs/raw/$_KCS_CORE_VERSION}"
 __KCS_CORE_REGISTRIES=("$_KCS_CORE_REGISTRY")
+
+# KCT_ENABLED=true ## Enabled test mode
 
 # endregion
 # ---------------------------------------------------------------------------- #
@@ -34,9 +40,7 @@ _kcs_setup() {
   fi
 
   if ! [ -f "$filepath" ] && ! "$_KCS_CORE_LOCAL"; then
-    if "$debug"; then
-      echo "file is missing ($filepath), download from registries"
-    fi
+    echo "download missing file from registries: '$filepath'"
 
     local registry download_url
     for registry in "${__KCS_CORE_REGISTRIES[@]}"; do
