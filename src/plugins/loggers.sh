@@ -175,7 +175,6 @@ _kcs_logger_is_silent() {
 }
 
 __kcs_loggers_on_init() {
-  kcs_load_plugin templates
   if _kcs_logger_is_debug "$_KCS_LOG_LEVEL"; then
     __KCS_LOG_DEBUG_ENABLED=true
   fi
@@ -202,3 +201,5 @@ __kcs_loggers_on_init() {
     __KCS_LOG_PRINT_ENABLED=false
   fi
 }
+
+kcs_load_plugin templates
