@@ -24,12 +24,16 @@ source "$__KCS_PATH_SETUP"
 # shellcheck disable=SC2034
 KCS_CORE_OPTIONS=(
   @load "$_KCS_CORE_DEFAULT"
-  @listen main
+  # @load registries
+  # @registry.add gh:kc-workspace/kcs-registries
+  # @registry.add gh:kc-workspace/kcs-registries@branch-name
+  # @listen main
 )
 
 __kcs_default_on_main() {
-  kcs_exec logger info default.main "hello %s" world
-  return 0
+  local ns="default.main"
+
+  kcs_exec logger info "$ns" "hello %s" "$*"
 }
 
 "$_KCS_CORE_START" "$@"
