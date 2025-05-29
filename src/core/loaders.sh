@@ -13,7 +13,7 @@ kcs_load_plugin() {
   local ns="core.loader.plugin.load"
   local name="${1:?Plugin name is required}"
   local filename="$name.sh"
-  shift 2
+  shift
 
   if [[ "$name" == "$_KCS_CORE_DEFAULT" ]]; then
     local plugin
